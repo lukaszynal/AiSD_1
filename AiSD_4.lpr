@@ -1,7 +1,7 @@
-{Program:  AiSD_4 v.01, 01.06.2021
+{Program:  AiSD_4 v.01, 13.05.2021
 Autor: Szynal Lukasz, 150063, 2020/2021, Informatyka, D2, I semestr}
 
-unit AiSD_cwiczenie5_unit1;
+unit aisd_cwiczenie4_unit1;
 
 {$mode objfpc}{$H+}
 
@@ -12,240 +12,330 @@ uses
 
 type
 
-  { TForm_Listy }
+  { TForm_Sort }
 
-  TForm_Listy = class(TForm)
-    Button_Info: TButton;
-    Button_Koniec: TButton;
-    Button_Sortuj: TButton;
+  TForm_Sort = class(TForm)
     Button_Losuj: TButton;
-    Label_ListaNieposortowana: TLabel;
-    Label_ListaPosortowana: TLabel;
-    ListBox_ListaNieposortowana: TListBox;
-    ListBox_ListaPosortowana: TListBox;
-
+    Button_Koniec: TButton;
+    Button_Kopiuj: TButton;
+    Button_Kopiuj_Odwrotnie: TButton;
+    Button_Sort_Babelkowe: TButton;
+    Button_SortProste: TButton;
+    Button_Straznik: TButton;
+    Button_ProsteWybieranie: TButton;
+    Button_Szybkie: TButton;
+    Button_Info: TButton;
+    Edit_LiczbaZamian: TEdit;
+    Edit_LiczbaPorownan: TEdit;
+    Label_LiczbaPorownan: TLabel;
+    Label_LiczbaZamian: TLabel;
+    Label_DanePosortowane: TLabel;
+    Label_DaneZrodlowe: TLabel;
+    ListBox_DaneZrodlowe: TListBox;
+    ListBox_DanePosortowane: TListBox;
+    procedure Button_SzybkieClick(Sender: TObject);
     procedure Button_LosujClick(Sender: TObject);
     procedure Button_InfoClick(Sender: TObject);
     procedure Button_KoniecClick(Sender: TObject);
-    procedure Button_SortujClick(Sender: TObject);
+    procedure Button_KopiujClick(Sender: TObject);
+    procedure Button_Kopiuj_OdwrotnieClick(Sender: TObject);
+    procedure Button_ProsteWybieranieClick(Sender: TObject);
+    procedure Button_SortProsteClick(Sender: TObject);
+    procedure Button_Sort_BabelkoweClick(Sender: TObject);
+    procedure Button_StraznikClick(Sender: TObject);
+
+    procedure Wyswietl_Zrodlo;
+    procedure Wyswietl_Posortowane;
+    procedure Wyswietl_LiczbaZamian;
+    procedure Wyswietl_LiczbaPorownan;
+    procedure Losuj;
+    procedure KopiujDoSort;
+    procedure Kopiuj;
+    procedure KopiujOdwrotnie;
+    procedure Sortuj_Babelkowo;
+    procedure Zamien(var Liczba1, Liczba2 : integer);
+    procedure Sortuj_ProsteWstawianie;
+    procedure Sortuj_Straznik;
+    procedure Sortuj_ProsteWybieranie;
+    procedure Quicksort(lewy, prawy : integer);
+    procedure Sortuj_Szybkie;
 
   private
-    const cRozmiarListy = 20;           // rozmiar listy
-    type
-        tWezel = ^tLista;               // typ wskaznikowy
 
-        tLista = record                 // typ rekordowy
-          Liczba : Integer;
-          Nastepny : tWezel
-        end;
-    var
-      Lista : tWezel;                   // zmienna globalna listy
+  const cRozmiarTablicy = 20;
+  var   TabSort : array [0..cRozmiarTablicy] of integer;
+        TabLiczb : array [0..cRozmiarTablicy] of integer;
+        Zamiana :integer;
+        Porownania :integer;
 
   public
-    procedure pLosuj;
-    procedure pDodajWezel(var Wezel_Pierwszy : tWezel; liczba : integer);
-    procedure pWyswietlNieposortowane(Wezel : tWezel);
-    procedure pSortuj;
-    function fSzukajWiekszy(Wezel_Pierwszy : tWezel; liczba_kontrolna : integer) : tWezel;
-    procedure pDodajWezelWiekszy(var Wezel_Pierwszy : tWezel; Wezel_Wiekszy : tWezel);
-    procedure pUsunWezel(var Wezel_Pierwszy : tWezel; Wezel_Wybrany : tWezel);
-    procedure pUsunWezelKontrolny(var Wezel_Pierwszy : tWezel);
-    procedure pWyswietlPosortowane(Wezel : tWezel);
-    procedure pInfo;
+
   end;
 
 var
-  Form_Listy: TForm_Listy;
+  Form_Sort: TForm_Sort;
 
 implementation
 
 {$R *.lfm}
 
-{ TForm_Listy }
+{ TForm_Sort }
 
-procedure TForm_Listy.Button_InfoClick(Sender: TObject);
+procedure TForm_Sort.Button_KoniecClick(Sender: TObject);
 begin
-  pInfo;
+Application.Terminate;
 end;
 
-procedure TForm_Listy.Button_LosujClick(Sender: TObject);
+procedure TForm_Sort.Button_KopiujClick(Sender: TObject);
 begin
-  pLosuj;
+  Kopiuj;
 end;
 
-procedure TForm_Listy.Button_KoniecClick(Sender: TObject);
+procedure TForm_Sort.Button_Kopiuj_OdwrotnieClick(Sender: TObject);
 begin
-  Application.Terminate;
+  KopiujOdwrotnie;
 end;
 
-procedure TForm_Listy.Button_SortujClick(Sender: TObject);
+procedure TForm_Sort.Button_ProsteWybieranieClick(Sender: TObject);
 begin
-  pSortuj;
+  Sortuj_ProsteWybieranie;
 end;
 
-{Tworzenie listy skladajacej sie z 20 elementow i przypisanie im losowej liczby
-z przedzialu <0,1000), a nastepnie wyswietlenie jej w ListBox}
-procedure TForm_Listy.pLosuj;
-var i, liczba : integer;
+procedure TForm_Sort.Button_SortProsteClick(Sender: TObject);
 begin
-  Randomize;
-  Lista := nil;                    // Deklaracja pustej listy
-  for i:=1 to cRozmiarListy do
-    begin
-      liczba:=Random(1000);
-      pDodajWezel(Lista, liczba);  // Dodawanie kolejnych wezlow
-    end;
-  pWyswietlNieposortowane(Lista);
+  Sortuj_ProsteWstawianie;
 end;
 
-{Dodanie kolejnego wezla na koniec listy}
-procedure TForm_Listy.pDodajWezel (var Wezel_Pierwszy : tWezel; liczba : integer);
-var
-  Wezel_Nowy, Wezel : tWezel;
+procedure TForm_Sort.Button_Sort_BabelkoweClick(Sender: TObject);
 begin
-  New (Wezel_Nowy);                         // Tworzymy nowy wezel
-  Wezel_Nowy^.Nastepny := nil;
-  Wezel_Nowy^.Liczba := liczba;
-  Wezel := Wezel_Pierwszy;
-  if Wezel = nil then Wezel_Pierwszy := Wezel_Nowy // Sprawdzamy czy lista nie jest pusta
-  else
-    begin
-      while Wezel^.Nastepny <> nil do Wezel := Wezel^.Nastepny; //Przepisujemy wskazania nastepnego wezla
-      Wezel^.Nastepny := Wezel_Nowy;
-    end;
+  Sortuj_Babelkowo;
 end;
 
-{Wyswietlanie listy nieposortowanej poprzez trawersowanie}
-procedure TForm_Listy.pWyswietlNieposortowane(Wezel : tWezel);
+procedure TForm_Sort.Button_StraznikClick(Sender: TObject);
+begin
+  Sortuj_Straznik;
+end;
+
+procedure TForm_Sort.Button_InfoClick(Sender: TObject);
+var komunikat : string;
+begin
+Komunikat:=' AiSD2_4, Autor: Szynal Łukasz, 150063' +#13+
+           '2020/2021, Informatyka, D2, Semestr I';
+Application.MessageBox(PChar(komunikat),'Informacja o programie',MB_OK);
+
+end;
+
+procedure TForm_Sort.Button_LosujClick(Sender: TObject);
+begin
+  Losuj;
+end;
+
+procedure TForm_Sort.Button_SzybkieClick(Sender: TObject);
+begin
+  Sortuj_Szybkie;
+end;
+
+procedure TForm_Sort.Wyswietl_Zrodlo; // Wyswietlanie wartosci tablicy w polu na dane zrodlowe
 var i : integer;
 begin
-  i:=1;
-  ListBox_ListaNieposortowana.Clear;
-  while Wezel <> nil do
-    begin
-      ListBox_ListaNieposortowana.Items.Add(IntToStr(i)+': '+IntToStr(Wezel^.Liczba));
-      i:=i+1;
-      Wezel := Wezel^.Nastepny;
-    end;
+ListBox_DaneZrodlowe.Clear;
+for i:=1 to cRozmiarTablicy do
+ ListBox_DaneZrodlowe.Items.Add( IntToStr(i)+': '+IntToStr(TabLiczb[i]));
 end;
 
-{Sortowanie listy poprzez wstawienie na koncu listy wezla kontrolnego zawierajacego
-liczbe spoza przedzialu. Nastepnie wyszukiwanie wezlow o najmniejszej wartosci liczbowej
-w porzadku rosnacym, a nastepnie przenoszenie ich na koniec listy i usuniecie ze srodka.
-Przeszukiwanie listy trwa do momentu odnalezienia wezla kontrolnego za ktorym sa juz elementy uporzadkowane.
-Ostatnim elementem algorytmu jest usuniecie pierwszego elementu czyli wezla kontrolnego
-oraz wyswietlenie listy w ListBox.}
-procedure TForm_Listy.pSortuj;
-var
-  Wezel, Wezel_Wiekszy : tWezel;
-  i, liczba_kontrolna : integer;
+procedure TForm_Sort.Wyswietl_Posortowane; // Wyswietlanie posortowanych wartosci tablicy w polu na dane posortowane
+var i : integer;
 begin
-  Wezel := Lista;
-  liczba_kontrolna := (-1);
-  pDodajWezel(Wezel, liczba_kontrolna);
-  for i:=1 to cRozmiarListy do
-    begin
-      Wezel_Wiekszy := fSzukajWiekszy(Wezel, liczba_kontrolna);
-      pDodajWezelWiekszy(Wezel, Wezel_Wiekszy);
-      pUsunWezel(Wezel, Wezel_Wiekszy);
-    end;
-  pUsunWezelKontrolny(Wezel);
-  pWyswietlPosortowane(Wezel);
-  Lista := Wezel;
+ListBox_DanePosortowane.Clear;
+for i:=1 to cRozmiarTablicy do
+ ListBox_DanePosortowane.Items.Add( IntToStr(i)+': '+IntToStr(TabSort[i]));
 end;
 
-{Wyszukiwanie wezla o wiekszej wartosci liczbowej}
-function TForm_Listy.fSzukajWiekszy(Wezel_Pierwszy : tWezel; liczba_kontrolna : integer) : tWezel;
-var
-  Wezel, Wezel_Wiekszy : tWezel;
+procedure TForm_Sort.Wyswietl_LiczbaZamian; // Wyswietlanie liczby zamian
 begin
-  Wezel_Wiekszy := Wezel_Pierwszy;
-  if Wezel_Pierwszy <> nil then
-    begin
-      Wezel := Wezel_Pierwszy^.Nastepny;
-      while Wezel^.Liczba <> liczba_kontrolna do
-        begin
-          if Wezel^.Liczba < Wezel_Wiekszy^.Liczba then Wezel_Wiekszy := Wezel;
-          Wezel := Wezel^.Nastepny;
-        end;
-    end;
-  fSzukajWiekszy := Wezel_Wiekszy;
+Edit_LiczbaZamian.Clear;
+Edit_LiczbaZamian.Text:=(IntToStr(Zamiana));
 end;
 
-{Dodanie kolejnego wiekszego wezla na koniec listy}
-procedure TForm_Listy.pDodajWezelWiekszy(var Wezel_Pierwszy : tWezel; Wezel_Wiekszy : tWezel);
-var
-  Wezel_Nowy, Wezel : tWezel;
+procedure TForm_Sort.Wyswietl_LiczbaPorownan; // Wyswietlanie liczby zamian
 begin
-  New (Wezel_Nowy);                         // Tworzymy nowy wezel
-  Wezel_Nowy^.Nastepny := nil;
-  Wezel_Nowy^.Liczba := Wezel_Wiekszy^.Liczba;
-  Wezel := Wezel_Pierwszy;
-  if Wezel = nil then Wezel_Pierwszy := Wezel_Nowy
-  else
-    begin
-      while Wezel^.Nastepny <> nil do Wezel := Wezel^.Nastepny; //Przepisujemy wskazania nastepnego wezla
-      Wezel^.Nastepny := Wezel_Nowy;
-    end;
+Edit_LiczbaPorownan.Clear;
+Edit_LiczbaPorownan.Text:=(IntToStr(Porownania));
 end;
 
-procedure TForm_Listy.pUsunWezelKontrolny(var Wezel_Pierwszy : tWezel);
-var
-  Wezel : tWezel;
+procedure TForm_Sort.Losuj; // Losowanie i wyswietlanie liczb z przedzialu <0,1000)
+var i : integer;
 begin
-  Wezel := Wezel_Pierwszy;             // zapamiętujemy początek
-  if Wezel <> nil then
+for i:=1 to cRozmiarTablicy do TabLiczb[i]:=Random(1000);
+Wyswietl_Zrodlo;
+end;
+
+procedure TForm_Sort.KopiujDoSort; // Kopiowanie wartosci z pola danych zrodlowych do danych posortowanych
+var i :integer;
+begin
+for i:=1 to cRozmiarTablicy do TabSort[i]:=TabLiczb[i];
+end;
+
+procedure TForm_Sort.Kopiuj; // Kopiowanie wartosci z pola danych posortowanych do danych zrodlowych
+var i :integer;
+begin
+for i:=1 to cRozmiarTablicy do TabLiczb[i]:=TabSort[i];
+Wyswietl_Zrodlo;
+end;
+
+procedure TForm_Sort.KopiujOdwrotnie; // Kopiowanie wartosci z pola danych posortowanych do danych zrodlowych w odwrotnej kolejnosci
+var i, l :integer;
+begin
+l:=cRozmiarTablicy;
+for i:=1 to cRozmiarTablicy do
+ begin
+    TabLiczb[i]:=TabSort[l];
+    l:=l-1
+ end;
+Wyswietl_Zrodlo;
+end;
+
+procedure TForm_Sort.Sortuj_Babelkowo; // Sortowanie babelkowe
+var i,j : integer;
+begin
+Zamiana :=0;
+Porownania :=0;
+KopiujDoSort;
+for i:=1 to cRozmiarTablicy-1 do
+ begin
+ for j:=cRozmiarTablicy downto i+1 do
+   begin
+     Porownania:=Porownania+1;
+     if TabSort[j-1]>TabSort[j] then
+       begin
+         Zamien( TabSort[j-1],TabSort[j] );
+         Zamiana := Zamiana+1;
+       end;
+    end;
+ end;
+Wyswietl_Posortowane;
+Wyswietl_LiczbaZamian;
+Wyswietl_LiczbaPorownan;
+end;
+
+procedure TForm_Sort.Sortuj_ProsteWstawianie; // Sortowanie przez proste wstawianie
+var i,j : integer;
+ CzyKoniec : boolean;
+begin
+Zamiana :=0;
+Porownania :=0;
+KopiujDoSort;
+for i:=1 to cRozmiarTablicy-1 do
+ begin
+ CzyKoniec:=FALSE;
+ j:=i+1;
+ repeat
+ Porownania:=Porownania+1;
+ if TabSort[j]<TabSort[j-1] then
+ begin
+ Zamien( TabSort[j],TabSort[j-1] );
+ Zamiana := Zamiana+1;
+ j:=j-1
+ end
+ else CzyKoniec:=True;
+ until ( j=1 ) or CzyKoniec;
+ end;
+Wyswietl_Posortowane;
+Wyswietl_LiczbaZamian;
+Wyswietl_LiczbaPorownan;
+end;
+
+procedure TForm_Sort.Zamien( var Liczba1, Liczba2 : integer ); // Procedura zamieniajaca wartosci miejscami
+var Pom : integer;
+begin
+Pom:=Liczba1;
+Liczba1:=Liczba2;
+Liczba2:=Pom
+end;
+
+procedure TForm_Sort.Sortuj_Straznik; // Sortowanie przez proste wstawianie ze straznikiem
+var i,j,Nowy : integer;
+begin
+Zamiana :=0;
+Porownania :=0;
+KopiujDoSort;
+for i:=2 to cRozmiarTablicy do
+ begin
+ Nowy:=TabSort[i];
+ TabSort[0]:=Nowy;
+ j:=i-1;
+ while Nowy<TabSort[j] do
+ begin
+ TabSort[j+1]:=TabSort[j];
+ Porownania:=Porownania+1;
+ Zamiana := Zamiana+1;
+ j:=j-1
+ end;
+ TabSort[j+1]:=Nowy;
+ end;
+Wyswietl_Posortowane;
+Wyswietl_LiczbaZamian;
+Wyswietl_LiczbaPorownan;
+end;
+
+procedure TForm_Sort.Sortuj_ProsteWybieranie; // Sortowanie przez proste wybieranie
+var i,j,Imin : integer;
+begin
+Zamiana :=0;
+Porownania :=0;
+KopiujDoSort;
+for i:=1 to cRozmiarTablicy-1 do
+ begin
+ Imin:=i;
+ for j:=i to cRozmiarTablicy do
   begin
-    Wezel_Pierwszy := Wezel^.Nastepny; // nowy początek
-    dispose (Wezel);                   // usuń element z pamięci
+  Porownania:=Porownania+1;
+  if TabSort[Imin]>TabSort[j] then Imin:=j;
   end;
+ Zamien( TabSort[i],TabSort[Imin] );
+ Zamiana := Zamiana+1;
+ end;
+Wyswietl_Posortowane;
+Wyswietl_LiczbaZamian;
+Wyswietl_LiczbaPorownan;
 end;
 
-{Wyswietlanie listy posortowanej poprzez trawersowanie}
-procedure TForm_Listy.pWyswietlPosortowane(Wezel : tWezel);
+procedure TForm_Sort.Quicksort(lewy, prawy  : integer); // Algorytm szybkiego sortowania
 var
-  i : integer;
+  i,j,os,x : integer;
 begin
-  i:=1;
-  ListBox_ListaPosortowana.Clear;
-  while Wezel <> nil do
-    begin
-      ListBox_ListaPosortowana.Items.Add( IntToStr(i)+': '+IntToStr(Wezel^.Liczba));
-      i:=i+1;
-      Wezel := Wezel^.Nastepny;
-    end;
+  i := (lewy + prawy) div 2;
+  os := TabSort[i]; TabSort[i] := TabSort[prawy];
+  j := lewy;
+  for i := lewy to (prawy-1) do
+   begin
+    Porownania:=Porownania+1;
+    if TabSort[i] < os then
+       begin
+       Porownania:=Porownania+1;
+         Zamiana := Zamiana+1;
+         x := TabSort[i]; TabSort[i] := TabSort[j]; TabSort[j] := x;
+         j:=j+1;
+       end;
+   end;
+ TabSort[prawy] := TabSort[j]; TabSort[j] := os;
+  if lewy < (j-1)  then Quicksort(lewy, j - 1);
+  if (j+1) < prawy then Quicksort(j + 1, prawy);
+  Wyswietl_Posortowane;
 end;
 
-{Usuwanie wybranego wezla}
-procedure TForm_Listy.pUsunWezel(var Wezel_Pierwszy : tWezel; Wezel_Wybrany : tWezel);
+procedure TForm_Sort.Sortuj_Szybkie; // Sortowanie szybkie
 var
-  Wezel : tWezel;
+  lewy, prawy : integer;
 begin
-  if Wezel_Pierwszy = Wezel_Wybrany then
-    begin
-      Wezel := Wezel_Pierwszy;
-      if Wezel <> nil then
-        begin
-          Wezel_Pierwszy := Wezel^.Nastepny;
-          dispose (Wezel);
-        end;
-    end
-  else
-    begin
-      Wezel := Wezel_Pierwszy;
-      while Wezel^.Nastepny <> Wezel_Wybrany do Wezel := Wezel^.Nastepny;
-      Wezel^.Nastepny := Wezel_Wybrany^.Nastepny;
-      dispose (Wezel_Wybrany);
-    end;
-end;
-
-{Wyswietlanie informacji o programie}
-procedure TForm_Listy.pInfo;
-var
-  komunikat : string;
-begin
-  Komunikat:=' AiSD2_5, Autor: Szynal Łukasz, 150063' +#13+
-             '2020/2021, Informatyka, D2, Semestr I';
-  Application.MessageBox(PChar(komunikat),'Informacja o programie',MB_OK);
+Zamiana :=0;
+Porownania :=0;
+KopiujDoSort;
+lewy := 1;
+prawy := cRozmiarTablicy;
+Quicksort(lewy, prawy);
+Wyswietl_Posortowane;
+Wyswietl_LiczbaZamian;
+Wyswietl_LiczbaPorownan;
 end;
 end.
